@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson 5 Chunks Review</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Lexend', 'Noto Sans TC', sans-serif; background: #fefce8; }
+        .chunk-highlight { color: #8b5cf6; font-weight: 800; text-decoration: underline; text-underline-offset: 4px; }
+        .tab-active { background: #8b5cf6; color: white; transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        .card-shadow { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }
+        .btn-check { transition: all 0.2s; border-width: 2px; }
+        .btn-check:active { transform: scale(0.95); }
+        .screenshot-area { background: white; border: 2px solid #e2e8f0; padding: 2rem; border-radius: 1.5rem; }
+    </style>
+</head>
+<body class="min-h-screen pb-20">
+
+    <nav class="bg-white border-b sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+            <h1 class="text-xl font-bold text-violet-800 flex items-center">
+                <span class="mr-2 text-2xl">📚</span> Lesson 5 語塊專家
+            </h1>
+            <div class="flex space-x-1 bg-slate-100 p-1 rounded-xl text-sm">
+                <button onclick="switchMode('list')" id="btn-mode-list" class="px-4 py-2 rounded-lg font-bold transition tab-active">全部例句</button>
+                <button onclick="switchMode('quiz')" id="btn-mode-quiz" class="px-4 py-2 rounded-lg font-bold transition text-slate-500">語塊挑戰</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto p-4 pt-8">
+
+        <!-- Mode: List View -->
+        <div id="mode-list" class="mode-content space-y-4">
+            <div class="bg-violet-50 p-4 rounded-2xl border border-violet-100 mb-6 flex items-center">
+                <span class="text-2xl mr-3">💡</span>
+                <p class="text-violet-900 text-sm font-medium">這是第 5 課完整的 29 句練習！挑戰模式會隨機抽出 10 題喔！</p>
+            </div>
+            <div id="list-container" class="space-y-4"></div>
+        </div>
+
+        <!-- Mode: Quiz Challenge -->
+        <div id="mode-quiz" class="mode-content hidden">
+            <!-- Name Input Stage -->
+            <div id="quiz-auth" class="bg-white rounded-3xl card-shadow p-10 text-center border border-slate-100">
+                <h2 class="text-2xl font-bold text-slate-800 mb-4">準備好開始挑戰了嗎？</h2>
+                <p class="text-slate-500 mb-8">請輸入你的姓名以開始 10 題隨機挑戰：</p>
+                <input type="text" id="student-name" placeholder="請輸入姓名" class="w-full max-w-xs mx-auto block p-4 border-2 border-slate-200 rounded-xl mb-6 focus:border-violet-400 focus:outline-none font-bold text-center text-lg">
+                <button onclick="initQuizSession()" class="bg-violet-500 text-white px-12 py-4 rounded-xl font-black shadow-lg hover:bg-violet-600 transition text-lg">開始挑戰</button>
+            </div>
+
+            <!-- Quiz Play Stage -->
+            <div id="quiz-play" class="hidden">
+                <div class="bg-white rounded-3xl card-shadow p-8 mb-8 border border-slate-100">
+                    <div class="flex justify-between items-center mb-8">
+                        <span id="quiz-progress" class="font-black text-violet-700 bg-violet-50 px-4 py-1.5 rounded-full text-sm tracking-widest">STEP 1/10</span>
+                        <div class="text-right">
+                            <p id="quiz-user-display" class="text-xs text-slate-400 font-bold uppercase"></p>
+                            <span id="quiz-score" class="text-orange-500 font-bold bg-orange-50 px-4 py-1.5 rounded-full text-sm">SCORE: 0</span>
+                        </div>
+                    </div>
+                    <div id="quiz-area" class="text-center min-h-[140px] flex flex-col justify-center">
+                        <!-- Dynamic Content -->
+                    </div>
+                    <div id="quiz-feedback" class="mt-8 text-center h-8 font-bold text-lg"></div>
+                </div>
+                <div id="quiz-options" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            </div>
+
+            <!-- Quiz Result Stage -->
+            <div id="quiz-result" class="hidden">
+                <div class="screenshot-area shadow-2xl" id="final-report">
+                    <div class="text-center mb-6">
+                        <div class="text-6xl mb-4">🎖️</div>
+                        <h2 class="text-3xl font-black text-slate-800">Lesson 5 挑戰報告</h2>
+                        <div class="w-16 h-1 bg-violet-500 mx-auto mt-2"></div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-8">
+                        <div class="bg-slate-50 p-4 rounded-xl">
+                            <p class="text-slate-400 text-xs font-bold uppercase mb-1">學生姓名</p>
+                            <p id="res-name" class="text-xl font-black text-slate-700"></p>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-xl">
+                            <p class="text-slate-400 text-xs font-bold uppercase mb-1">完成日期</p>
+                            <p id="res-date" class="text-xl font-black text-slate-700"></p>
+                        </div>
+                        <div class="bg-violet-500 p-4 rounded-xl col-span-2 text-center">
+                            <p class="text-violet-100 text-xs font-bold uppercase mb-1">最終得分 (Total Score)</p>
+                            <p id="res-score" class="text-4xl font-black text-white"></p>
+                        </div>
+                    </div>
+
+                    <p class="text-center text-slate-400 text-sm italic">📸 請截圖此畫面傳送給老師進行核對</p>
+                </div>
+                
+                <div class="flex justify-center mt-8 space-x-4">
+                    <button onclick="switchMode('list')" class="bg-slate-200 text-slate-600 px-8 py-3 rounded-full font-bold">返回例句</button>
+                    <button onclick="switchMode('quiz')" class="bg-violet-500 text-white px-8 py-3 rounded-full font-bold shadow-lg">重新挑戰</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const rawData = [
+            { id: 1, eng: "Parents are always **worried about** their children.", chunk: "worried about", chn: "父母總是**擔心**他們的孩子。" },
+            { id: 2, eng: "He works two jobs to **make a living**.", chunk: "make a living", chn: "他做兩份工作來**謀生**。" },
+            { id: 3, eng: "Please **take a deep breath** and relax.", chunk: "take a deep breath", chn: "請**深呼吸**並放鬆。" },
+            { id: 4, eng: "Many people **are afraid of** spiders.", chunk: "are afraid of", chn: "許多人**害怕**蜘蛛。" },
+            { id: 5, eng: "I didn't have breakfast because I was **in a hurry**.", chunk: "in a hurry", chn: "因為我很**匆忙**，所以沒吃早餐。" },
+            { id: 6, eng: "You should **believe in** yourself.", chunk: "believe in", chn: "你應該**相信**你自己。" },
+            { id: 7, eng: "Don't **give up on** your dreams so easily.", chunk: "give up on", chn: "不要這麼輕易就**放棄**你的夢想。" },
+            { id: 8, eng: "I still **keep in touch with** my elementary school friends.", chunk: "keep in touch with", chn: "我仍然與我國小同學**保持聯絡**。" },
+            { id: 9, eng: "Please **pay attention to** what the teacher is saying.", chunk: "pay attention to", chn: "請**注意**老師正在說的話。" },
+            { id: 10, eng: "Who will **take care of** your cat while you're away?", chunk: "take care of", chn: "你不在時誰會**照顧**你的貓？" },
+            { id: 11, eng: "I don't **agree with** your opinion on this matter.", chunk: "agree with", chn: "我不**同意**你對這件事的看法。" },
+            { id: 12, eng: "English is spoken **all over the world**.", chunk: "all over the world", chn: "英文在**全世界**都被使用。" },
+            { id: 13, eng: "He can sing and dance **at the same time**.", chunk: "at the same time", chn: "他可以**同時**唱歌和跳舞。" },
+            { id: 14, eng: "It's hard to **get used to** the cold weather here.", chunk: "get used to", chn: "很難**習慣**這裡寒冷的天氣。" },
+            { id: 15, eng: "We **look forward to** seeing you again.", chunk: "look forward to", chn: "我們**期待**再次見到你。" },
+            { id: 16, eng: "Cell phones are useful; **on the other hand**, they can be distracting.", chunk: "on the other hand", chn: "手機很有用；**另一方面**，它們也可能讓人分心。" },
+            { id: 17, eng: "Her grandfather **passed away** last night.", chunk: "passed away", chn: "她的祖父在昨晚**去世**了。" },
+            { id: 18, eng: "The company was **set up** ten years ago.", chunk: "set up", chn: "這間公司是十年前**創立**的。" },
+            { id: 19, eng: "**Thanks to** your help, we finished the project on time.", chunk: "Thanks to", chn: "**多虧了**你的幫助，我們準時完成了計畫。" },
+            { id: 20, eng: "Please call me back **as soon as possible**.", chunk: "as soon as possible", chn: "請**盡快**回電給我。" },
+            { id: 21, eng: "**By the way**, do you know where the library is?", chunk: "By the way", chn: "**順帶一提**，你知道圖書館在哪裡嗎？" },
+            { id: 22, eng: "She likes fruit, **for example**, apples and bananas.", chunk: "for example", chn: "她喜歡水果，**例如**：蘋果和香蕉。" },
+            { id: 23, eng: "He looks young, but **in fact** he is over forty.", chunk: "in fact", chn: "**事實上**他已經超過四十歲了。" },
+            { id: 24, eng: "Don't **stay up late**, or you will be tired tomorrow.", chunk: "stay up late", chn: "不要**熬夜**，否則你明天會很累。" },
+            { id: 25, eng: "Are you going to **take part in** the race?", chunk: "take part in", chn: "你要**參加**這場比賽嗎？" },
+            { id: 26, eng: "My car **broke down** on the way to work.", chunk: "break down", chn: "我的車在上班路上**故障**了。" },
+            { id: 27, eng: "We need to **come up with** a better plan.", chunk: "come up with", chn: "我們需要**想出**一個更好的計畫。" },
+            { id: 28, eng: "She knows how to **deal with** difficult customers.", chunk: "deal with", chn: "她知道如何**處理**奧客。" },
+            { id: 29, eng: "Our success **depends on** how hard we work.", chunk: "depend on", chn: "我們的成功**取決於**我們有多努力。" }
+        ];
+
+        let currentIdx = 0;
+        let score = 0;
+        let quizPool = [];
+        let userName = "";
+
+        window.onload = () => {
+            renderList();
+        };
+
+        function speak(text) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text.replace(/\*\*/g, ''));
+            utterance.lang = 'en-US';
+            utterance.rate = 0.8;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function switchMode(mode) {
+            document.querySelectorAll('.mode-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('mode-' + mode).classList.remove('hidden');
+            
+            document.querySelectorAll('nav button').forEach(el => el.classList.remove('tab-active', 'text-slate-500'));
+            const activeBtn = document.getElementById('btn-mode-' + mode);
+            activeBtn.classList.add('tab-active');
+
+            if (mode === 'quiz') {
+                document.getElementById('quiz-auth').classList.remove('hidden');
+                document.getElementById('quiz-play').classList.add('hidden');
+                document.getElementById('quiz-result').classList.add('hidden');
+            }
+        }
+
+        function renderList() {
+            const container = document.getElementById('list-container');
+            container.innerHTML = "";
+            rawData.forEach(item => {
+                const htmlEng = item.eng.replace(/\*\*(.*?)\*\*/g, `<span class="chunk-highlight cursor-pointer" onclick="event.stopPropagation(); speak('$1')">$1</span>`);
+                const htmlChn = item.chn.replace(/\*\*(.*?)\*\*/g, `<span class="text-violet-600 underline font-bold">$1</span>`);
+                const card = document.createElement('div');
+                card.className = "bg-white p-6 rounded-2xl border border-slate-100 card-shadow flex items-start space-x-4";
+                card.innerHTML = `
+                    <div class="mt-1 flex flex-col items-center">
+                        <span class="text-xs font-black text-slate-300 mb-2">#${item.id}</span>
+                        <button onclick="speak('${item.eng}')" class="p-2 bg-violet-50 rounded-full text-violet-500 hover:bg-violet-100 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M160,32V224a8,8,0,0,1-12.91,6.31L77.25,176H32a16,16,0,0,1-16-16V96A16,16,0,0,1,32,80H77.25l69.84-54.31A8,8,0,0,1,160,32Z"></path></svg>
+                        </button>
+                    </div>
+                    <div>
+                        <p class="text-xl text-slate-800 font-medium leading-relaxed">${htmlEng}</p>
+                        <p class="text-slate-400 text-sm mt-2 font-bold">${htmlChn}</p>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function initQuizSession() {
+            const nameField = document.getElementById('student-name');
+            if (!nameField.value.trim()) {
+                nameField.classList.add('border-red-400');
+                return;
+            }
+            userName = nameField.value.trim();
+            document.getElementById('quiz-auth').classList.add('hidden');
+            document.getElementById('quiz-play').classList.remove('hidden');
+            document.getElementById('quiz-user-display').innerText = `Student: ${userName}`;
+            startQuiz();
+        }
+
+        function startQuiz() {
+            currentIdx = 0;
+            score = 0;
+            quizPool = [...rawData].sort(() => Math.random() - 0.5).slice(0, 10);
+            updateQuiz();
+        }
+
+        function updateQuiz() {
+            if (currentIdx >= quizPool.length) {
+                showFinalReport();
+                return;
+            }
+            const q = quizPool[currentIdx];
+            document.getElementById('quiz-progress').innerText = `STEP ${currentIdx + 1}/10`;
+            document.getElementById('quiz-score').innerText = `SCORE: ${score}`;
+            document.getElementById('quiz-feedback').innerText = "";
+            
+            const area = document.getElementById('quiz-area');
+            const displayQ = q.eng.replace(/\*\*(.*?)\*\*/g, '<span class="bg-violet-50 text-violet-50 px-3 py-1 rounded-lg border-b-2 border-violet-400 mx-1">__________</span>');
+            
+            area.innerHTML = `
+                <p class="text-slate-400 text-sm mb-4 font-bold tracking-widest">${q.chn.replace(/<[^>]*>/g, '').replace(/\*\*/g, '')}</p>
+                <h3 class="text-2xl md:text-3xl font-extrabold text-slate-800">${displayQ}</h3>
+            `;
+
+            const optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.innerHTML = "";
+            
+            let distractors = rawData
+                .filter(d => d.chunk !== q.chunk)
+                .map(d => d.chunk);
+            
+            distractors = [...new Set(distractors)].sort(() => Math.random() - 0.5).slice(0, 3);
+            let allOptions = [q.chunk, ...distractors].sort(() => Math.random() - 0.5);
+            
+            allOptions.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "bg-white border-2 border-slate-100 p-5 rounded-2xl font-bold text-slate-600 hover:border-violet-400 hover:text-violet-600 hover:bg-violet-50 transition btn-check text-lg";
+                btn.innerText = opt;
+                btn.onclick = () => {
+                    if(document.getElementById('quiz-feedback').innerText !== "") return;
+                    check(opt, q.chunk, btn);
+                };
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function check(selected, correct, btn) {
+            const feedback = document.getElementById('quiz-feedback');
+            if (selected === correct) {
+                score += 10;
+                btn.classList.replace('border-slate-100', 'border-green-500');
+                btn.classList.add('bg-green-50', 'text-green-600');
+                feedback.innerHTML = "✅ Correct!";
+                feedback.className = "mt-8 text-center font-bold text-green-500 text-xl";
+                speak(rawData.find(d => d.chunk === correct).eng);
+            } else {
+                btn.classList.replace('border-slate-100', 'border-red-500');
+                btn.classList.add('bg-red-50', 'text-red-600');
+                feedback.innerHTML = `❌ Incorrect! It's <span class='underline'>${correct}</span>`;
+                feedback.className = "mt-8 text-center font-bold text-red-500 text-xl";
+            }
+            
+            setTimeout(() => {
+                currentIdx++;
+                updateQuiz();
+            }, 1800);
+        }
+
+        function showFinalReport() {
+            document.getElementById('quiz-play').classList.add('hidden');
+            document.getElementById('quiz-result').classList.remove('hidden');
+            
+            document.getElementById('res-name').innerText = userName;
+            document.getElementById('res-score').innerText = `${score} / 100`;
+            
+            const now = new Date();
+            document.getElementById('res-date').innerText = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+        }
+    </script>
+</body>
+</html>
